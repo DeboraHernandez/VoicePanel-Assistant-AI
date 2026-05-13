@@ -2,7 +2,7 @@
 venv/
 __pycache__/
 *.pyc
-datasey_aug/
+dataset_aug/
 features/
 features_aug/
 models/
