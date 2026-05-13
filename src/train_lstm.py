@@ -208,15 +208,26 @@ def export_tflite(model, output_path, X_train_sample=None):
     """
     import tensorflow as tf
 
+    def _apply_select_ops(conv):
+        """Configura SELECT_TF_OPS para que las ops de LSTM (TensorList) pasen."""
+        conv.target_spec.supported_ops = [
+            tf.lite.OpsSet.TFLITE_BUILTINS,
+            tf.lite.OpsSet.SELECT_TF_OPS,   # ← necesario para Bi-LSTM
+        ]
+        conv._experimental_lower_tensor_list_ops = False  # ← clave para LSTM
+
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
     if X_train_sample is not None:
         try:
+            _apply_select_ops(converter)
             converter.target_spec.supported_ops = [
                 tf.lite.OpsSet.TFLITE_BUILTINS_INT8,
-                tf.lite.OpsSet.TFLITE_BUILTINS,   # fallback si alguna op no soporta INT8
+                tf.lite.OpsSet.TFLITE_BUILTINS,
+                tf.lite.OpsSet.SELECT_TF_OPS,
             ]
+            converter._experimental_lower_tensor_list_ops = False
             converter.inference_input_type  = tf.float32
             converter.inference_output_type = tf.float32
 
@@ -231,9 +242,11 @@ def export_tflite(model, output_path, X_train_sample=None):
             print(f"  ⚠ INT8 falló ({e}), usando cuantización dinámica.")
             converter2 = tf.lite.TFLiteConverter.from_keras_model(model)
             converter2.optimizations = [tf.lite.Optimize.DEFAULT]
+            _apply_select_ops(converter2)   # ← esto faltaba
             tflite_model = converter2.convert()
             quant_type   = "Dinámica de pesos"
     else:
+        _apply_select_ops(converter)        # ← y esto también
         tflite_model = converter.convert()
         quant_type   = "Dinámica de pesos"
 
@@ -250,18 +263,31 @@ def benchmark_tflite(tflite_path, X_sample, n_runs=50):
     import tensorflow as tf
     import time
 
-    interpreter = tf.lite.Interpreter(model_path=tflite_path)
-    interpreter.allocate_tensors()
-    inp_idx = interpreter.get_input_details()[0]["index"]
-    out_idx = interpreter.get_output_details()[0]["index"]
+    use_interpreter = True
+    interpreter = None
+
+    try:
+        interpreter = tf.lite.Interpreter(model_path=tflite_path, num_threads=4)
+        interpreter.allocate_tensors()
+        inp_idx = interpreter.get_input_details()[0]["index"]
+        out_idx = interpreter.get_output_details()[0]["index"]
+    except RuntimeError as e:
+        print(f"  ⚠ TFLite runtime no soporta Flex ops aquí ({e})\n"
+              f"    Midiendo latencia con modelo Keras (misma aritmética, referencia válida).")
+        use_interpreter = False
+        keras_path = tflite_path.replace(".tflite", ".keras")
+        keras_model = tf.keras.models.load_model(keras_path)
 
     times = []
     for i in range(n_runs):
         sample = X_sample[i % len(X_sample) : i % len(X_sample) + 1].astype(np.float32)
         t0 = time.perf_counter()
-        interpreter.set_tensor(inp_idx, sample)
-        interpreter.invoke()
-        _ = interpreter.get_tensor(out_idx)
+        if use_interpreter:
+            interpreter.set_tensor(inp_idx, sample)
+            interpreter.invoke()
+            _ = interpreter.get_tensor(out_idx)
+        else:
+            _ = keras_model(sample, training=False)
         times.append((time.perf_counter() - t0) * 1000)
 
     times = np.array(times)

@@ -281,7 +281,7 @@ def plot_tsne(X_train, y_train, le, out_dir, max_samples=1000):
     # t-SNE → 2 dims
     tsne  = TSNE(n_components=2, random_state=RANDOM_STATE,
                  perplexity=min(30, len(y_plot) // 4),
-                 n_iter=500, verbose=0)
+                 max_iter=500, verbose=0)
     X_2d  = tsne.fit_transform(X_pca)
 
     # Gráfica
