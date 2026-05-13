@@ -1,0 +1,52 @@
+==============================================================
+  REPORTE DE EXPLORACIÓN DEL DATASET
+  Panel de domótica por voz — Módulo 1
+==============================================================
+
+RESUMEN GLOBAL
+--------------------------------------------------------------
+  Total de archivos escaneados : 240
+  ✔  OK                        : 240
+  ⚠  Con advertencias          : 0
+  ✖  Con errores               : 0
+  Clases encontradas           : 8
+  Participantes únicos (aprox) : 2
+  Duración promedio            : 2.000 s
+  Duración mínima              : 2.000 s
+  Duración máxima              : 2.000 s
+
+CLASES
+--------------------------------------------------------------
+  ✔ Todas las clases esperadas están presentes
+
+DETALLE POR CLASE
+--------------------------------------------------------------
+  Comando           Total    OK  Warn  Error  Dur_mean  RMS_mean
+  ---------------- ------ ----- ----- ------ --------- ---------
+  abrir                30    30     0      0    2.000s    3806.2
+  apaga                30    30     0      0    2.000s    3820.0
+  cerrar               30    30     0      0    2.000s    3862.4
+  detente              30    30     0      0    2.000s    2745.4
+  enciende             30    30     0      0    2.000s    2810.4
+  musica               30    30     0      0    2.000s     180.4
+  ruido_fondo          30    30     0      0    2.000s     906.7
+  ventilador           30    30     0      0    2.000s    2673.0
+
+BALANCE DE CLASES
+--------------------------------------------------------------
+  Clase con más muestras  : abrir (30)
+  Clase con menos muestras: abrir (30)
+  Ratio desbalance        : 1.00x
+  ✔ Balance aceptable
+
+ARCHIVOS CON PROBLEMAS
+--------------------------------------------------------------
+  ✔ Ninguno — dataset limpio
+
+RECOMENDACIONES PARA EL SIGUIENTE MÓDULO
+--------------------------------------------------------------
+  ✔ Dataset en buenas condiciones para proceder al módulo 2 (feature extraction).
+
+==============================================================
+  Fin del reporte
+==============================================================
