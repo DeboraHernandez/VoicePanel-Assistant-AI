@@ -63,3 +63,29 @@ pip install -r requirements.txt
 
 ---
 
+## Executar Proyecto
+
+VoicePanel-Assistant-AI se compone de 10 módulos principales. Que van desde el tratamiento de los audios que se usaran para el entrenamiento del modelo, la creación de dicho modelo y finalmente la implementación de este en un Raspberry Pi 4.
+
+Por lo tanto es importante ejecutar los 10 módulos en el orden correcto.
+
+### Módulos
+
+**Nota.** Recuerde ejecutar el proyecto desde la raiz de la siguiente forma:
+```bash
+python src/nombre_de_modulo.py
+```
+#### Creación de Modelo
+1. explore_dataset.py
+2. feature_extraction.py
+3. augment_dataset.py
+4. prepare_splits.py
+5. train_cnn.py
+6. evaluate_cnn.py
+7. train_lstm.py
+
+#### Modulos de Raspberry
+8. gpio_controller.py
+9. **realtime_pipeline.py**
+10. benchmark.py
+
