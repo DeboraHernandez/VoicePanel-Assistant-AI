@@ -1,6 +1,6 @@
 # VoicePanel-Assistant-AI
 
-## Installation
+## Instalación
 **IMPORTANTE:** Este proyecto requiere **Python 3.12**
 Revisar con python --version
 
@@ -63,7 +63,7 @@ pip install -r requirements.txt
 
 ---
 
-## Executar Proyecto
+## Ejecutar Proyecto
 
 VoicePanel-Assistant-AI se compone de 10 módulos principales. Que van desde el tratamiento de los audios que se usaran para el entrenamiento del modelo, la creación de dicho modelo y finalmente la implementación de este en un Raspberry Pi 4.
 
