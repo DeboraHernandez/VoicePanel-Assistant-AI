@@ -1,0 +1,124 @@
+import os
+import sounddevice as sd
+import numpy as np
+import pandas as pd
+from scipy.io.wavfile import write
+from datetime import datetime
+
+# =========================
+# CONFIGURACIÓN
+# =========================
+
+SAMPLE_RATE = 16000
+DURATION = 2  # segundos
+OUTPUT_FOLDER = "dataset"
+
+COMMANDS = [
+    "enciende",
+    "apaga",
+    "ventilador",
+    "abrir",
+    "cerrar",
+    "musica",
+    "detente",
+    "ruido_fondo"
+]
+
+#Escoger el numero de samples
+valid_sample_number = False
+while valid_sample_number == False:
+    try:
+        SAMPLES_PER_COMMAND = int(input("Ingrese el numero de grabaciones que realizará (RECOMENDAMOS 30): "))
+        valid_sample_number = True
+    except ValueError:
+        print("inserte un numero valido")
+
+
+person = input("Nombre del participante: ").strip().lower()
+environment = input("Ambiente (silencioso/ruido/lab/etc): ").strip().lower()
+
+# =========================
+# CREAR ESTRUCTURA
+# =========================
+
+for cmd in COMMANDS:
+    os.makedirs(os.path.join(OUTPUT_FOLDER, cmd), exist_ok=True)
+
+metadata = []
+
+# =========================
+# ESCOGER COMANDO
+# =========================
+print("COMANDOS DISPONIBLES: ")
+for cmd in COMMANDS:
+    print(cmd)
+
+choice_is_valid = False
+
+while choice_is_valid == False:
+    choice =  input("Comando a grabar: ").strip().lower()
+    for cmd in COMMANDS:
+        if choice == cmd:
+            print("cmd: " + choice + "elegido...")
+            choice_is_valid = True
+            break
+    if choice_is_valid == False:
+        print("Comando no valido, escoger otra vez...")
+
+
+
+
+print("\n=== INICIO DE GRABACIÓN DE DATASET ===\n")
+
+# =========================
+# GRABACIÓN CONTROLADA
+# =========================
+
+print(f"\n>>> COMANDO: {choice.upper()} <<<\n")
+
+for i in range(SAMPLES_PER_COMMAND):
+
+    input(f"[{i+1}/{SAMPLES_PER_COMMAND}] Presiona ENTER para grabar...")
+
+    print("Grabando...")
+
+    audio = sd.rec(
+        int(DURATION * SAMPLE_RATE),
+        samplerate=SAMPLE_RATE,
+        channels=1,
+        dtype=np.int16
+    )
+
+    sd.wait()
+
+    print("OK")
+
+    filename = f"{choice}_{person}_{i+1:03}.wav"
+
+    path = os.path.join(OUTPUT_FOLDER, choice, filename)
+
+    write(path, SAMPLE_RATE, audio)
+
+    metadata.append({
+        "file": filename,
+        "command": choice,
+        "person": person,
+        "environment": environment,
+        "sample_rate": SAMPLE_RATE,
+        "duration": DURATION,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
+
+    print(f"Guardado: {path}\n")
+
+print("\n=== GRABACIÓN FINALIZADA ===")
+
+# =========================
+# GUARDAR METADATA
+# =========================
+
+df = pd.DataFrame(metadata)
+csv_path = os.path.join(OUTPUT_FOLDER, "metadata.csv")
+df.to_csv(csv_path, index=False)
+
+print(f"Metadata guardada en: {csv_path}")
