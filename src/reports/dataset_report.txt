@@ -5,12 +5,12 @@
 
 RESUMEN GLOBAL
 --------------------------------------------------------------
-  Total de archivos escaneados : 240
-  ✔  OK                        : 240
-  ⚠  Con advertencias          : 0
+  Total de archivos escaneados : 2141
+  ✔  OK                        : 2008
+  ⚠  Con advertencias          : 133
   ✖  Con errores               : 0
   Clases encontradas           : 8
-  Participantes únicos (aprox) : 2
+  Participantes únicos (aprox) : 15
   Duración promedio            : 2.000 s
   Duración mínima              : 2.000 s
   Duración máxima              : 2.000 s
@@ -23,29 +23,295 @@ DETALLE POR CLASE
 --------------------------------------------------------------
   Comando           Total    OK  Warn  Error  Dur_mean  RMS_mean
   ---------------- ------ ----- ----- ------ --------- ---------
-  abrir                30    30     0      0    2.000s    3806.2
-  apaga                30    30     0      0    2.000s    3820.0
-  cerrar               30    30     0      0    2.000s    3862.4
-  detente              30    30     0      0    2.000s    2745.4
-  enciende             30    30     0      0    2.000s    2810.4
-  musica               30    30     0      0    2.000s     180.4
-  ruido_fondo          30    30     0      0    2.000s     906.7
-  ventilador           30    30     0      0    2.000s    2673.0
+  abrir               276   270     6      0    2.000s    2003.0
+  apaga               288   270    18      0    2.000s    2089.5
+  cerrar              281   269    12      0    2.000s    2214.1
+  detente             276   270     6      0    2.000s    1987.8
+  enciende            279   270     9      0    2.000s    1911.6
+  musica              290   270    20      0    2.000s    1372.3
+  ruido_fondo         179   119    60      0    2.000s     379.8
+  ventilador          272   270     2      0    2.000s    2119.2
 
 BALANCE DE CLASES
 --------------------------------------------------------------
-  Clase con más muestras  : abrir (30)
-  Clase con menos muestras: abrir (30)
-  Ratio desbalance        : 1.00x
+  Clase con más muestras  : musica (290)
+  Clase con menos muestras: ruido_fondo (179)
+  Ratio desbalance        : 1.62x
   ✔ Balance aceptable
 
-ARCHIVOS CON PROBLEMAS
+ARCHIVOS CON PROBLEMAS (133)
 --------------------------------------------------------------
-  ✔ Ninguno — dataset limpio
+  [WARN] abrir/abrir_luis_001.wav
+         → RMS=0.5 — posible grabación vacía
+  [WARN] abrir/abrir_melanie hernandez_018.wav
+         → RMS=33.2 — posible grabación vacía
+  [WARN] abrir/abrir_melanie hernandez_019.wav
+         → RMS=45.4 — posible grabación vacía
+  [WARN] abrir/abrir_melanie hernandez_020.wav
+         → RMS=37.7 — posible grabación vacía
+  [WARN] abrir/abrir_melanie hernandez_021.wav
+         → RMS=20.3 — posible grabación vacía
+  [WARN] abrir/abrir_melanie hernandez_024.wav
+         → RMS=48.8 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_002.wav
+         → RMS=18.9 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_004.wav
+         → RMS=4.7 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_007.wav
+         → RMS=16.5 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_008.wav
+         → RMS=16.4 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_009.wav
+         → RMS=7.4 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_012.wav
+         → RMS=11.0 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_015.wav
+         → RMS=20.3 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_016.wav
+         → RMS=7.1 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_017.wav
+         → RMS=43.0 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_018.wav
+         → RMS=24.7 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_020.wav
+         → RMS=5.4 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_022.wav
+         → RMS=10.3 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_023.wav
+         → RMS=7.9 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_025.wav
+         → RMS=36.4 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_026.wav
+         → RMS=36.8 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_028.wav
+         → RMS=11.0 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_029.wav
+         → RMS=4.9 — posible grabación vacía
+  [WARN] apaga/apaga_melanie hernandez_030.wav
+         → RMS=3.6 — posible grabación vacía
+  [WARN] cerrar/cerrar_luis_001.wav
+         → RMS=2.6 — posible grabación vacía
+  [WARN] cerrar/cerrar_melanie hernandez_002.wav
+         → RMS=30.4 — posible grabación vacía
+  [WARN] cerrar/cerrar_melanie hernandez_004.wav
+         → RMS=41.5 — posible grabación vacía
+  [WARN] cerrar/cerrar_melanie hernandez_005.wav
+         → RMS=47.1 — posible grabación vacía
+  [WARN] cerrar/cerrar_melanie hernandez_012.wav
+         → RMS=34.1 — posible grabación vacía
+  [WARN] cerrar/cerrar_melanie hernandez_015.wav
+         → RMS=46.5 — posible grabación vacía
+  [WARN] cerrar/cerrar_melanie hernandez_017.wav
+         → RMS=34.6 — posible grabación vacía
+  [WARN] cerrar/cerrar_melanie hernandez_018.wav
+         → RMS=18.6 — posible grabación vacía
+  [WARN] cerrar/cerrar_melanie hernandez_020.wav
+         → RMS=26.9 — posible grabación vacía
+  [WARN] cerrar/cerrar_melanie hernandez_022.wav
+         → RMS=24.8 — posible grabación vacía
+  [WARN] cerrar/cerrar_melanie hernandez_023.wav
+         → RMS=24.8 — posible grabación vacía
+  [WARN] cerrar/cerrar_melanie hernandez_024.wav
+         → RMS=19.4 — posible grabación vacía
+  [WARN] detente/detente_melanie hernandez_009.wav
+         → RMS=37.7 — posible grabación vacía
+  [WARN] detente/detente_melanie hernandez_021.wav
+         → RMS=38.2 — posible grabación vacía
+  [WARN] detente/detente_melanie hernandez_023.wav
+         → RMS=41.5 — posible grabación vacía
+  [WARN] detente/detente_melanie hernandez_025.wav
+         → RMS=29.1 — posible grabación vacía
+  [WARN] detente/detente_melanie hernandez_027.wav
+         → RMS=33.5 — posible grabación vacía
+  [WARN] detente/detente_melanie hernandez_029.wav
+         → RMS=33.1 — posible grabación vacía
+  [WARN] enciende/enciende_melanie hernandez_007.wav
+         → RMS=7.0 — posible grabación vacía
+  [WARN] enciende/enciende_melanie hernandez_008.wav
+         → RMS=19.3 — posible grabación vacía
+  [WARN] enciende/enciende_melanie hernandez_010.wav
+         → RMS=19.4 — posible grabación vacía
+  [WARN] enciende/enciende_melanie hernandez_011.wav
+         → RMS=35.8 — posible grabación vacía
+  [WARN] enciende/enciende_melanie hernandez_012.wav
+         → RMS=5.2 — posible grabación vacía
+  [WARN] enciende/enciende_melanie hernandez_017.wav
+         → RMS=13.5 — posible grabación vacía
+  [WARN] enciende/enciende_melanie hernandez_018.wav
+         → RMS=8.2 — posible grabación vacía
+  [WARN] enciende/enciende_melanie hernandez_022.wav
+         → RMS=7.3 — posible grabación vacía
+  [WARN] enciende/enciende_melanie hernandez_023.wav
+         → RMS=43.2 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_004.wav
+         → RMS=40.0 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_005.wav
+         → RMS=47.8 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_009.wav
+         → RMS=29.7 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_010.wav
+         → RMS=35.5 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_011.wav
+         → RMS=37.1 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_014.wav
+         → RMS=34.1 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_015.wav
+         → RMS=44.4 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_016.wav
+         → RMS=31.6 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_017.wav
+         → RMS=45.3 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_018.wav
+         → RMS=41.5 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_019.wav
+         → RMS=30.1 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_021.wav
+         → RMS=31.1 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_022.wav
+         → RMS=32.6 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_023.wav
+         → RMS=42.0 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_024.wav
+         → RMS=29.9 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_025.wav
+         → RMS=28.7 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_026.wav
+         → RMS=25.2 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_027.wav
+         → RMS=35.0 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_028.wav
+         → RMS=31.9 — posible grabación vacía
+  [WARN] musica/musica_melanie hernandez_030.wav
+         → RMS=45.2 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_débora_002.wav
+         → RMS=4.4 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_débora_003.wav
+         → RMS=27.9 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_débora_004.wav
+         → RMS=0.8 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_débora_005.wav
+         → RMS=0.9 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_débora_006.wav
+         → RMS=0.8 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_débora_009.wav
+         → RMS=12.9 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_débora_011.wav
+         → RMS=15.1 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_débora_012.wav
+         → RMS=40.1 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_luis_001.wav
+         → RMS=14.6 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_luis_010.wav
+         → RMS=31.5 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_001.wav
+         → RMS=49.6 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_002.wav
+         → RMS=35.6 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_003.wav
+         → RMS=19.5 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_004.wav
+         → RMS=24.6 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_005.wav
+         → RMS=18.2 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_006.wav
+         → RMS=16.0 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_007.wav
+         → RMS=12.8 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_008.wav
+         → RMS=16.3 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_011.wav
+         → RMS=30.0 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_012.wav
+         → RMS=26.1 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_013.wav
+         → RMS=26.4 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_015.wav
+         → RMS=27.4 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_016.wav
+         → RMS=22.6 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_017.wav
+         → RMS=22.4 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_019.wav
+         → RMS=23.2 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_020.wav
+         → RMS=24.1 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_021.wav
+         → RMS=34.2 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_022.wav
+         → RMS=31.4 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_023.wav
+         → RMS=34.8 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_024.wav
+         → RMS=29.3 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_025.wav
+         → RMS=26.4 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_026.wav
+         → RMS=24.6 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_027.wav
+         → RMS=27.2 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_028.wav
+         → RMS=19.0 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_029.wav
+         → RMS=26.7 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie hernandez_030.wav
+         → RMS=20.2 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_001.wav
+         → RMS=30.4 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_002.wav
+         → RMS=27.7 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_003.wav
+         → RMS=47.5 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_005.wav
+         → RMS=42.0 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_006.wav
+         → RMS=30.2 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_008.wav
+         → RMS=30.3 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_010.wav
+         → RMS=35.7 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_011.wav
+         → RMS=36.2 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_012.wav
+         → RMS=32.4 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_014.wav
+         → RMS=40.8 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_015.wav
+         → RMS=47.5 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_016.wav
+         → RMS=44.5 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_017.wav
+         → RMS=30.4 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_018.wav
+         → RMS=25.0 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_019.wav
+         → RMS=23.1 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_020.wav
+         → RMS=26.5 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_021.wav
+         → RMS=27.6 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_022.wav
+         → RMS=32.0 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_023.wav
+         → RMS=27.8 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_024.wav
+         → RMS=48.2 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_025.wav
+         → RMS=29.1 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_026.wav
+         → RMS=26.7 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_027.wav
+         → RMS=30.7 — posible grabación vacía
+  [WARN] ruido_fondo/ruido_fondo_melanie_029.wav
+         → RMS=39.1 — posible grabación vacía
+  [WARN] ventilador/ventilador_melanie hernandez_002.wav
+         → RMS=16.6 — posible grabación vacía
+  [WARN] ventilador/ventilador_melanie hernandez_003.wav
+         → RMS=27.5 — posible grabación vacía
 
 RECOMENDACIONES PARA EL SIGUIENTE MÓDULO
 --------------------------------------------------------------
-  ✔ Dataset en buenas condiciones para proceder al módulo 2 (feature extraction).
+  2. Revisar archivos con WARN — especialmente los de RMS bajo (silencio).
+  3. Aplicar data augmentation en módulo 3 priorizando clases pequeñas.
 
 ==============================================================
   Fin del reporte
