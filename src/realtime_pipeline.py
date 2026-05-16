@@ -23,6 +23,7 @@ Requisitos en RPi4:
     (gpiozero ya viene en Raspberry Pi OS)
 """
 
+import serial
 import os
 import sys
 import json
