@@ -8,14 +8,13 @@ Flujo completo:
     → VAD por energía (NumPy puro — sin librerías externas)
     → Buffer de 2 segundos
     → Extracción MFCC (librosa)
-    → Inferencia TFLite
+    → Inferencia SavedModel (tensorflow)
     → Umbral de confianza
     → Despacho a ActuatorController (GPIO)
 
 Uso:
     python realtime_pipeline.py
-    python realtime_pipeline.py --model models/cnn_model.tflite
-    python realtime_pipeline.py --model models/lstm_model.tflite
+    python realtime_pipeline.py --model models/cnn_savedmodel
     python realtime_pipeline.py --threshold 0.75 --verbose
 
 Requisitos en RPi4:
@@ -43,7 +42,7 @@ import numpy as np
 # ─────────────────────────────────────────────
 
 # Ruta por defecto al modelo y splits
-DEFAULT_MODEL    = "models/cnn_model.tflite"
+DEFAULT_MODEL    = "models/cnn_savedmodel"
 DEFAULT_SPLITS   = "splits"
 DEFAULT_THRESHOLD= 0.75      # confianza mínima para actuar
 DEFAULT_DEVICE   = None      # None = dispositivo por defecto del sistema
@@ -161,9 +160,9 @@ class EnergyVAD:
 def extract_features(audio: np.ndarray, cfg: dict) -> np.ndarray:
     """
     Extrae MFCC + Delta + Delta² de un array float32.
-    Devuelve tensor (1, T, C) listo para TFLite.
+    Devuelve tensor (1, T, C) listo para el SavedModel.
 
-    La dimensión extra al inicio es el batch=1 que TFLite necesita.
+    La dimensión extra al inicio es el batch=1 que el modelo necesita.
     El orden (T, C) = (125, 39) coincide con cómo se entrenó el modelo.
     """
     import librosa
@@ -205,58 +204,66 @@ def extract_features(audio: np.ndarray, cfg: dict) -> np.ndarray:
 
 
 # ─────────────────────────────────────────────
-# INFERENCIA TFLITE
+# INFERENCIA — SavedModel
 # ─────────────────────────────────────────────
 
-class TFLiteClassifier:
+class SavedModelClassifier:
     """
-    Wrapper liviano sobre TFLite Interpreter.
-    Carga el modelo una sola vez y reutiliza el intérprete
-    para todas las predicciones (evita overhead de carga).
+    Wrapper sobre tf.saved_model para inferencia con SavedModel de TF.
+
+    Carga el modelo una sola vez y reutiliza la función de inferencia
+    para todas las predicciones (evita overhead de carga en cada llamada).
+
+    Ventaja frente a TFLite: funciona directamente con 'tensorflow'
+    instalado, sin necesidad de tflite-runtime ni delegates adicionales.
     """
 
-    def __init__(self, model_path: str):
-        if not os.path.exists(model_path):
+    def __init__(self, model_dir: str):
+        if not os.path.isdir(model_dir):
             raise FileNotFoundError(
-                f"Modelo TFLite no encontrado: {model_path}\n"
+                f"SavedModel no encontrado: {model_dir}\n"
                 "Ejecuta train_cnn.py (módulo 5) para generarlo."
             )
 
         try:
             import tensorflow as tf
-            self._interpreter = tf.lite.Interpreter(model_path=model_path)
         except ImportError:
-            # Intentar con tflite_runtime (más liviano, recomendado en RPi)
-            try:
-                import tflite_runtime.interpreter as tflite
-                self._interpreter = tflite.Interpreter(model_path=model_path)
-            except ImportError:
-                raise ImportError(
-                    "Instala TensorFlow o tflite_runtime:\n"
-                    "  pip install tensorflow\n"
-                    "  # o en RPi (más liviano):\n"
-                    "  pip install tflite-runtime"
-                )
+            raise ImportError(
+                "TensorFlow no está instalado.\n"
+                "  pip install tensorflow"
+            )
 
-        self._interpreter.allocate_tensors()
-        self._inp_idx = self._interpreter.get_input_details()[0]["index"]
-        self._out_idx = self._interpreter.get_output_details()[0]["index"]
+        loaded          = tf.saved_model.load(model_dir)
+        self._infer_fn  = loaded.signatures["serving_default"]
+        self._tf        = tf
 
-        inp_shape = self._interpreter.get_input_details()[0]["shape"]
-        out_shape = self._interpreter.get_output_details()[0]["shape"]
-        print(f"  [TFLite] Modelo cargado: {model_path}")
-        print(f"           Input  shape : {inp_shape}")
-        print(f"           Output shape : {out_shape}")
-        print(f"           Tamaño       : {os.path.getsize(model_path)/1024:.1f} KB")
+        # Detectar claves de entrada y salida del grafo
+        self._input_key  = list(self._infer_fn.structured_input_signature[1].keys())[0]
+        self._output_key = list(self._infer_fn.structured_outputs.keys())[0]
+
+        # Info de shapes para log
+        inp_spec = self._infer_fn.structured_input_signature[1][self._input_key]
+        out_spec = self._infer_fn.structured_outputs[self._output_key]
+
+        total_bytes = sum(
+            os.path.getsize(os.path.join(dp, f))
+            for dp, _, files in os.walk(model_dir)
+            for f in files
+        )
+
+        print(f"  [SavedModel] Modelo cargado: {model_dir}/")
+        print(f"               Input  shape  : {inp_spec.shape}")
+        print(f"               Output shape  : {out_spec.shape}")
+        print(f"               Tamaño total  : {total_bytes/1024:.1f} KB")
 
     def predict(self, features: np.ndarray) -> np.ndarray:
         """
         Corre inferencia sobre features shape (1, T, C).
         Devuelve array de probabilidades shape (n_classes,).
         """
-        self._interpreter.set_tensor(self._inp_idx, features)
-        self._interpreter.invoke()
-        probs = self._interpreter.get_tensor(self._out_idx)[0]
+        tensor = self._tf.constant(features)
+        result = self._infer_fn(**{self._input_key: tensor})
+        probs  = result[self._output_key].numpy()[0]
         return probs
 
 
@@ -272,7 +279,7 @@ class RealtimePipeline:
     Arquitectura de hilos:
         Hilo principal   → sounddevice callback (alta prioridad)
         audio_queue      → buffer de chunks de audio entre hilos
-        Hilo de proceso  → VAD + MFCC + TFLite + GPIO
+        Hilo de proceso  → VAD + MFCC + SavedModel + GPIO
                            (corre en paralelo al audio capture)
 
     Esta separación garantiza que el callback de audio nunca
@@ -310,7 +317,7 @@ class RealtimePipeline:
 
         # ── Inicializar componentes ───────────
         self._vad        = EnergyVAD()
-        self._classifier = TFLiteClassifier(model_path)
+        self._classifier = SavedModelClassifier(model_path)
 
         # Importar aquí para que el error sea claro si no está instalado
         from gpio_controller import ActuatorController
@@ -403,7 +410,7 @@ class RealtimePipeline:
                 print(f"  [MFCC] Error: {e}")
                 continue
 
-            # ── Inferencia TFLite ──────────────
+            # ── Inferencia SavedModel ──────────
             t2    = time.perf_counter()
             probs = self._classifier.predict(features)
             t3    = time.perf_counter()
@@ -585,7 +592,7 @@ def main():
     )
     parser.add_argument(
         "--model", default=DEFAULT_MODEL,
-        help=f"Ruta al modelo .tflite (default: {DEFAULT_MODEL})"
+        help=f"Ruta al directorio SavedModel (default: {DEFAULT_MODEL})"
     )
     parser.add_argument(
         "--splits", default=DEFAULT_SPLITS,
@@ -624,8 +631,8 @@ def main():
         return
 
     # ── Verificar archivos necesarios ─────────
-    if not os.path.exists(args.model):
-        print(f"✖ Modelo no encontrado: {args.model}")
+    if not os.path.isdir(args.model):
+        print(f"✖ SavedModel no encontrado: {args.model}")
         print("  Ejecuta train_cnn.py (módulo 5) para generarlo.")
         sys.exit(1)
 
@@ -642,6 +649,7 @@ def main():
     print(f"  Modelo    : {args.model}")
     print(f"  Umbral    : {args.threshold}")
     print(f"  VAD       : energía RMS (NumPy puro)")
+    print(f"  Inferencia: SavedModel (tensorflow)")
 
     # ── Inicializar y correr pipeline ─────────
     try:

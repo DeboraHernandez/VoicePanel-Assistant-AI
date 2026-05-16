@@ -21,7 +21,7 @@ Uso:
 
 Salida (en models/):
     cnn_model.keras          ← modelo completo para continuar entrenando
-    cnn_model.tflite         ← modelo cuantizado para inferencia en RPi4
+    cnn_savedmodel/          ← SavedModel para inferencia directa con TF en RPi4
     models/reports/
         cnn_training_curves.png
         cnn_confusion_matrix.png
@@ -211,74 +211,64 @@ def build_callbacks(models_dir, cfg):
 
 
 # ─────────────────────────────────────────────
-# EXPORTAR A TFLITE
+# EXPORTAR SAVEDMODEL
 # ─────────────────────────────────────────────
 
-def export_tflite(model, output_path, X_train_sample=None):
+def export_savedmodel(model, output_dir):
     """
-    Exporta el modelo Keras a TFLite con cuantización dinámica de pesos.
-    La cuantización reduce el tamaño ~4× y acelera la inferencia en ARM
-    sin pérdida significativa de accuracy (generalmente <1%).
+    Exporta el modelo Keras como SavedModel de TensorFlow.
 
-    Si se provee X_train_sample se aplica cuantización completa INT8
-    (aún más rápida en RPi4 con NEON SIMD).
+    El formato SavedModel es el estándar de despliegue de TF y funciona
+    directamente con 'tensorflow' instalado — sin necesidad de tflite-runtime
+    ni de ningún delegate adicional. Es compatible con RPi4 siempre que
+    tenga tensorflow >= 2.x instalado.
+
+    El directorio resultante contiene:
+        saved_model.pb          ← grafo y pesos
+        variables/              ← variables del modelo
+        fingerprint.pb
     """
     import tensorflow as tf
 
-    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    model.export(output_dir)
 
-    if X_train_sample is not None:
-        # Cuantización INT8 completa — requiere datos de calibración
-        converter.optimizations      = [tf.lite.Optimize.DEFAULT]
-        converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-        converter.inference_input_type  = tf.float32   # entrada sigue siendo float
-        converter.inference_output_type = tf.float32
-
-        def representative_data_gen():
-            for i in range(min(200, len(X_train_sample))):
-                sample = X_train_sample[i:i+1].astype(np.float32)
-                yield [sample]
-
-        converter.representative_dataset = representative_data_gen
-        quant_type = "INT8"
-    else:
-        # Cuantización dinámica de pesos (más simple, sin datos de calibración)
-        converter.optimizations = [tf.lite.Optimize.DEFAULT]
-        quant_type = "dynamic weights"
-
-    tflite_model = converter.convert()
-
-    with open(output_path, "wb") as f:
-        f.write(tflite_model)
-
-    size_kb = os.path.getsize(output_path) / 1024
-    print(f"  TFLite guardado: {output_path}")
-    print(f"  Cuantización   : {quant_type}")
-    print(f"  Tamaño         : {size_kb:.1f} KB")
-
+    # Calcular tamaño total del directorio
+    total_bytes = sum(
+        os.path.getsize(os.path.join(dp, f))
+        for dp, _, filenames in os.walk(output_dir)
+        for f in filenames
+    )
+    size_kb = total_bytes / 1024
+    print(f"  SavedModel guardado: {output_dir}/")
+    print(f"  Tamaño total       : {size_kb:.1f} KB")
     return size_kb
 
 
-def benchmark_tflite(tflite_path, X_sample, n_runs=50):
+def benchmark_savedmodel(savedmodel_dir, X_sample, n_runs=50):
     """
-    Mide la latencia de inferencia del modelo TFLite en el hardware actual.
+    Mide la latencia de inferencia del SavedModel en el hardware actual.
     En RPi4 los tiempos serán 3–5× más lentos que en una laptop x86.
     """
     import tensorflow as tf
     import time
 
-    interpreter = tf.lite.Interpreter(model_path=tflite_path)
-    interpreter.allocate_tensors()
-    inp_idx = interpreter.get_input_details()[0]["index"]
-    out_idx = interpreter.get_output_details()[0]["index"]
+    # Cargar el SavedModel y obtener la función de inferencia
+    loaded   = tf.saved_model.load(savedmodel_dir)
+    infer_fn = loaded.signatures["serving_default"]
+
+    # Obtener nombre de la clave de salida (varía según el modelo)
+    output_key = list(infer_fn.structured_outputs.keys())[0]
+
+    # Nombre de la clave de entrada (definida en build_cnn como "mfcc_input")
+    input_key = list(infer_fn.structured_input_signature[1].keys())[0]
 
     times = []
     for i in range(n_runs):
         sample = X_sample[i % len(X_sample) : i % len(X_sample) + 1].astype(np.float32)
+        tensor = tf.constant(sample)
         t0 = time.perf_counter()
-        interpreter.set_tensor(inp_idx, sample)
-        interpreter.invoke()
-        _ = interpreter.get_tensor(out_idx)
+        result = infer_fn(**{input_key: tensor})
+        _ = result[output_key].numpy()
         times.append((time.perf_counter() - t0) * 1000)   # ms
 
     times = np.array(times)
@@ -367,7 +357,7 @@ def plot_confusion_matrix(y_true, y_pred, classes, out_dir):
 
 def save_metrics_report(model, history, y_val, y_val_pred,
                         y_test, y_test_pred, classes,
-                        tflite_size_kb, latency, out_dir):
+                        savedmodel_size_kb, latency, out_dir):
     lines = []
 
     def log(msg=""):
@@ -426,11 +416,11 @@ def save_metrics_report(model, history, y_val, y_val_pred,
     log(classification_report(y_test, y_test_pred,
                                target_names=classes, digits=4))
 
-    # ── TFLite ────────────────────────────────
+    # ── SavedModel ────────────────────────────
     log()
-    log("MODELO TFLITE")
+    log("MODELO SAVEDMODEL")
     log(sep2)
-    log(f"  Tamaño             : {tflite_size_kb:.1f} KB")
+    log(f"  Tamaño             : {savedmodel_size_kb:.1f} KB")
     if latency:
         log(f"  Latencia media     : {latency['mean_ms']:.2f} ms")
         log(f"  Latencia P95       : {latency['p95_ms']:.2f} ms")
@@ -466,11 +456,11 @@ def main():
                         help=f"Épocas máximas (default: {TRAIN_CFG['epochs']})")
     parser.add_argument("--batch",   type=int, default=TRAIN_CFG["batch_size"],
                         help=f"Batch size (default: {TRAIN_CFG['batch_size']})")
-    parser.add_argument("--no-plots",    action="store_true")
-    parser.add_argument("--no-tflite",   action="store_true",
-                        help="Omitir exportación TFLite")
-    parser.add_argument("--no-benchmark",action="store_true",
-                        help="Omitir benchmark de latencia TFLite")
+    parser.add_argument("--no-plots",     action="store_true")
+    parser.add_argument("--no-export",    action="store_true",
+                        help="Omitir exportación SavedModel")
+    parser.add_argument("--no-benchmark", action="store_true",
+                        help="Omitir benchmark de latencia SavedModel")
     args = parser.parse_args()
 
     TRAIN_CFG["epochs"]     = args.epochs
@@ -554,33 +544,33 @@ def main():
     model.save(keras_path)
     print(f"\nModelo Keras guardado: {keras_path}")
 
-    # ── 7. Exportar TFLite ────────────────────
-    tflite_size_kb = 0
-    latency        = None
+    # ── 7. Exportar SavedModel ────────────────
+    savedmodel_size_kb = 0
+    latency            = None
 
-    if not args.no_tflite:
-        print("\nExportando a TFLite...")
-        tflite_path = os.path.join(args.output, "cnn_model.tflite")
-        tflite_size_kb = export_tflite(model, tflite_path, X_train_sample=X_train)
+    if not args.no_export:
+        print("\nExportando SavedModel...")
+        savedmodel_path    = os.path.join(args.output, "cnn_savedmodel")
+        savedmodel_size_kb = export_savedmodel(model, savedmodel_path)
 
         if not args.no_benchmark:
             print(f"  Benchmark de latencia ({50} inferencias)...")
-            latency = benchmark_tflite(tflite_path, X_test)
+            latency = benchmark_savedmodel(savedmodel_path, X_test)
             print(f"  Media: {latency['mean_ms']:.2f} ms  |  P95: {latency['p95_ms']:.2f} ms")
 
     # ── 8. Guardar metadatos del modelo ───────
     model_info = {
-        "model_type"     : "CNN1D",
-        "input_shape"    : list(input_shape),
-        "n_classes"      : int(n_classes),
-        "classes"        : list(classes),
-        "total_params"   : int(total_params),
-        "val_accuracy"   : float(val_acc),
-        "test_accuracy"  : float(test_acc),
-        "epochs_trained" : len(history["accuracy"]),
-        "train_cfg"      : TRAIN_CFG,
-        "tflite_kb"      : float(tflite_size_kb),
-        "latency_ms"     : latency,
+        "model_type"      : "CNN1D",
+        "input_shape"     : list(input_shape),
+        "n_classes"       : int(n_classes),
+        "classes"         : list(classes),
+        "total_params"    : int(total_params),
+        "val_accuracy"    : float(val_acc),
+        "test_accuracy"   : float(test_acc),
+        "epochs_trained"  : len(history["accuracy"]),
+        "train_cfg"       : TRAIN_CFG,
+        "savedmodel_kb"   : float(savedmodel_size_kb),
+        "latency_ms"      : latency,
     }
     info_path = os.path.join(args.output, "cnn_model_info.json")
     with open(info_path, "w") as f:
@@ -591,7 +581,7 @@ def main():
     save_metrics_report(model, history,
                         y_val, y_val_pred,
                         y_test, y_test_pred,
-                        classes, tflite_size_kb, latency,
+                        classes, savedmodel_size_kb, latency,
                         reports_dir)
 
     if not args.no_plots:
